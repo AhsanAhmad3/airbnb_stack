@@ -1,16 +1,13 @@
-import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-
-import axios from "axios";
-import PlacesFormPage from "./PlacesFormPage";
+import AccountNav from "../AccountNav";
 
 export default function PlacesPage() {
-  const { action } = useParams();
-
   return (
     <div>
-      {action !== "new" && (
+      <AccountNav />
         <div className="text-center">
+          list of all added places
+          <br />
           <Link
             className="inline-flex gap-1 bg-primary text-white py-2 px-6 rounded-full"
             to={"/account/places/new"}
@@ -30,7 +27,6 @@ export default function PlacesPage() {
             Add new place
           </Link>
         </div>
-      )}
     </div>
   );
 }

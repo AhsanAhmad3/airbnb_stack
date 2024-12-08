@@ -1,18 +1,20 @@
 import PhotosUploader from "../PhotosUploader";
 import Perks from "../Perks";
 import { useState } from "react";
+import AccountNav from "../AccountNav";
+import { Navigate } from "react-router-dom";
 
 export default function PlacesFormPage(){
   const [title, setTitle] = useState("");
   const [address, setAddress] = useState("");
   const [addedPhotos, setAddedPhotos] = useState([]);
-
   const [description, setDescription] = useState("");
   const [perks, setPerks] = useState([]);
   const [extraInfo, setExtraInfo] = useState("");
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [maxGuests, setMaxGuests] = useState(1);
+  const [redirect, setRedirect] = useState(false);
 
   function inputHeader(text) {
     return <h2 className="text-2xl mt-4">{text} </h2>;
@@ -46,10 +48,17 @@ export default function PlacesFormPage(){
       maxGuests,
     });
 
+    setRedirect(true);
+  }
+
+
+  if (redirect){
+    return <Navigate to={'/account/places'} />
   }
 
     return (
         <div>
+          <AccountNav />
           <form onSubmit={addNewPlace}>
             {preInput("Title", "title for your place")}
 
