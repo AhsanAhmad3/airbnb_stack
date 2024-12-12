@@ -30,6 +30,8 @@ function App() {
           
           <Route path="/account/places/new" element={<PlacesFormPage />} />
 
+          <Route path="/account/places/:id" element={<PlacesFormPage />} />
+
         </Route>
       </Routes>
     </UserContextProvider>

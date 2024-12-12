@@ -1,10 +1,12 @@
 import PhotosUploader from "../PhotosUploader";
 import Perks from "../Perks";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AccountNav from "../AccountNav";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 
 export default function PlacesFormPage(){
+  const {id} = useParams();
   const [title, setTitle] = useState("");
   const [address, setAddress] = useState("");
   const [addedPhotos, setAddedPhotos] = useState([]);
@@ -14,7 +16,28 @@ export default function PlacesFormPage(){
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [maxGuests, setMaxGuests] = useState(1);
+  const [price,setPrice] = useState(100);
   const [redirect, setRedirect] = useState(false);
+
+  useEffect(() => {
+    if(!id){
+      return;
+    }
+    axios.get('/places/' +id).then(response => {
+      const {data} = response;
+      setTitle(data.title);
+      setAddress(data.address);
+      setAddedPhotos(data.photos);
+      setDescription(data.description);
+      setPerks(data.perks);
+      setExtraInfo(data.extraInfo);
+      setCheckIn(data.checkIn);
+      setCheckOut(data.checkOut);
+      setMaxGuests(data.maxGuests);
+      setPrice(data.price);
+    });
+  }, [id]);
+//  const navigate = useNavigate();
 
   function inputHeader(text) {
     return <h2 className="text-2xl mt-4">{text} </h2>;
@@ -33,22 +56,36 @@ export default function PlacesFormPage(){
     );
   }
 
-  async function addNewPlace(ev) {
-    ev.preventDefault();
-
-    await axios.post("/places", {
+  async function savePlace(ev) {
+     ev.preventDefault();
+     const placeData = {
       title,
-      address,
-      addedPhotos,
-      description,
-      perks,
-      extraInfo,
-      checkIn,
-      checkOut,
-      maxGuests,
-    });
+        address,
+        addedPhotos,
+        description,
+        perks,
+        extraInfo,
+        checkIn,
+        checkOut,
+        maxGuests,
+        price
+     };
 
-    setRedirect(true);
+     if(id){
+
+      await axios.put("/places", {
+        id, ...placeData
+      });
+  
+      setRedirect(true);
+     } else {
+
+      await axios.post("/places", placeData);
+  
+      setRedirect(true);
+     }
+
+    
   }
 
 
@@ -59,7 +96,7 @@ export default function PlacesFormPage(){
     return (
         <div>
           <AccountNav />
-          <form onSubmit={addNewPlace}>
+          <form onSubmit={savePlace}>
             {preInput("Title", "title for your place")}
 
             <input
@@ -108,7 +145,7 @@ export default function PlacesFormPage(){
               "add check in and out times, remember to have some time for cleaning between guests"
             )}
 
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="grid gap-2 grid-cols-2 md:grid-cols-4">
               <div>
                 <h3 className="mt-2 -mb-1">check in time</h3>
                 <input
@@ -137,9 +174,19 @@ export default function PlacesFormPage(){
                   onChange={(ev) => setMaxGuests(ev.target.value)}
                 />
               </div>
+
+              <div>
+                <h3 className="mt-2 -mb-1">Price Per Night</h3>
+                <input
+                  type="number"
+                  value={price}
+                  onChange={(ev) => setPrice(ev.target.value)}
+                />
+              </div>
+
             </div>
 
-            <button className="primary my-4">Save </button>
+            <button className="primary my-4" >Save </button>
           </form>
         </div>
     );
