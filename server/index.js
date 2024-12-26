@@ -3,7 +3,8 @@ const cors = require('cors');
 const app = express();
 require('dotenv').config();
 const User = require('./models/User.js');
-const Place = require('./models/Place.js')
+const Place = require('./models/Place.js');
+const Booking = require('./models/Booking.js');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
@@ -11,6 +12,8 @@ const imageDownloader = require('image-downloader');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const fs = require('fs');
+const { resolve } = require('path');
+const { reject } = require('assert');
 
 
 const bcryptSalt = bcrypt.genSaltSync(10);
@@ -27,6 +30,17 @@ app.use(cors({
 
 
 mongoose.connect(process.env.MONGO_URL);
+
+function getUserDataFromReq(req){
+    return new Promise((resolve,reject) => {
+        jwt.verify(req.cookies.token, jwtSecret, {}, async (err , userData ) => {
+            if (err) throw err;
+            resolve(userData);
+    
+        });
+    });
+    
+}
 
 app.get('/test' , (req,res) => {
 
@@ -190,6 +204,30 @@ app.put('/places', async (req,res) => {
 
 app.get('/places', async (req,res) => {
     res.json( await Place.find() );
+});
+
+app.post('/bookings', async (req,res) => {
+    const userData = await getUserDataFromReq(req);
+
+    const {place,checkIn,checkOut,numberOfGuests,name,phone,price} = req.body;
+
+    Booking.create({
+        place,checkIn,checkOut,numberOfGuests,name,phone,price,
+        user:userData.id,
+    }).then((doc) => {
+        res.json(doc);
+    }).catch((err) => {
+        throw err;
+    });
+
+});
+
+
+
+
+app.get('/bookings', async (req,res) => {
+    const userData = await getUserDataFromReq(req);
+    res.json( await Booking.find({user:userData.id}).populate('place') );
 });
 
 app.listen(4000);
